@@ -1,0 +1,7 @@
+{ 
+  "loglevels1": 7, 
+  "loglevels_comment":"设置日志级别 1：ERROR ,3:ALARM,7:NOTICE,15:FILDBG,31:DEBUG,255:ALL",
+  "AsyncTime1": 10, 
+  "AsyncTime_comment":"异步请求超时时间,单位秒",
+  "flydataLocalDBPath":"C:/Users/gggglw/Desktop/qs_data"
+}

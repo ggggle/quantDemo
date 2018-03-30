@@ -1,6 +1,8 @@
 #include "export.h"
 #include <iostream>
 #include <chrono>
+#include "cfg.h"
+
 
 #pragma comment(lib, "legacy_stdio_definitions.lib")
 
@@ -189,10 +191,15 @@ void testdeleteLocalStockData(HsQuantDataSDKInterface* sdk)
 
 int main()
 {
+	Cfg _cfg;
+	if (!_cfg.ok)
+	{
+		return -1;
+	}
 	SDKOption* opt = CreateSDKOption();
-	opt->setHQConnectInfo("192.168.46.217", 9601);
-	opt->setHQhttpDomain("http://10.20.135.140:8081");
-	opt->setInfoNetDomain("http://10.20.135.125:8080");
+	opt->setHQConnectInfo(_cfg.hq_ip.c_str(), _cfg.hq_port);
+	opt->setHQhttpDomain(_cfg.hq_http.c_str());
+	opt->setInfoNetDomain(_cfg.info_net.c_str());
 	HsQuantDataSDKInterface* sdk = CreateQuantSDK(opt);
 	int flag(0);
 	while (true)
