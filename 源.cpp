@@ -189,6 +189,50 @@ void testdeleteLocalStockData(HsQuantDataSDKInterface* sdk)
 	delete[] _codeInfo;
 }
 
+void testgetStorageConfig(HsQuantDataSDKInterface* sdk)
+{
+	StorageConfig _cfg;
+	int ret = sdk->getStorageConfig(_cfg);
+	OUTPUT(ret);
+	OUTPUT(_cfg.storagePath);
+}
+
+void testsetStorageConfig(HsQuantDataSDKInterface* sdk)
+{
+	string storagePath;
+	GET(storagePath);
+	if (storagePath.length() < 1)
+		return;
+	StorageConfig _cfg;
+	memcpy(_cfg.storagePath, storagePath.data(), storagePath.length());
+	int ret = sdk->setStorageConfig(_cfg);
+	OUTPUT(ret);
+}
+
+void testgetLocalStorageStockInfo(HsQuantDataSDKInterface* sdk)
+{
+	string pMarket;
+	int nFrequency, nStartDate, nEndDate;
+	GET(pMarket);
+	GET(nFrequency);
+	GET(nStartDate);
+	GET(nEndDate);
+	int size = sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	OUTPUT(size);
+}
+
+void testgetStorageStockInfo(HsQuantDataSDKInterface* sdk)
+{
+	string pMarket;
+	int nFrequency, nStartDate, nEndDate;
+	GET(pMarket);
+	GET(nFrequency);
+	GET(nStartDate);
+	GET(nEndDate);
+	int size = sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	OUTPUT(size);
+}
+
 int main()
 {
 	Cfg _cfg;
@@ -201,7 +245,7 @@ int main()
 	opt->setHQhttpDomain(_cfg.hq_http.c_str());
 	opt->setInfoNetDomain(_cfg.info_net.c_str());
 	HsQuantDataSDKInterface* sdk = CreateQuantSDK(opt);
-	int flag(0);
+	unsigned char flag(0);
 	while (true)
 	{
 		cout << "--------------------------------" << endl;
@@ -212,30 +256,46 @@ int main()
 		cout << "5.getLocalHistoryByOffset" << endl;
 		cout << "6.downLoadHistoryData" << endl;
 		cout << "7.deleteLocalStockData" << endl;
+		cout << "8.getLocalStorageStockInfo" << endl;
+		cout << "9.getStorageStockInfo" << endl;
+		cout << "a.setStorageConfig" << endl;
+		cout << "b.getStorageConfig" << endl;
 		cout << "--------------------------------" << endl;
 		cin >> flag;
 		switch (flag)
 		{
-		case 1:
+		case '1':
 			testgetHistoryByDateSize(sdk);
 			break;
-		case 2:
+		case '2':
 			testgetHistoryByDate(sdk);
 			break;
-		case 3:
+		case '3':
 			testgetLocalHistoryByDate(sdk);
 			break;
-		case 4:
+		case '4':
 			testgetLocalHistoryByDateSize(sdk);
 			break;
-		case 5:
+		case '5':
 			testgetLocalHistoryByOffset(sdk);
 			break;
-		case 6:
+		case '6':
 			testdownLoadHistoryData(sdk);
 			break;
-		case 7:
+		case '7':
 			testdeleteLocalStockData(sdk);
+			break;
+		case '8':
+			testgetLocalStorageStockInfo(sdk);
+			break;
+		case '9':
+			testgetStorageStockInfo(sdk);
+			break;
+		case 'a':
+			testsetStorageConfig(sdk);
+			break;
+		case 'b':
+			testgetStorageConfig(sdk);
 			break;
 		default:
 			break;
