@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include "cfg.h"
+#include "callBack.h"
 
 
 #pragma comment(lib, "legacy_stdio_definitions.lib")
@@ -11,7 +12,7 @@ cout<<#arg##":";\
 cin>>arg;
 
 #define OUTPUT(arg) \
-cout<<#arg##":"<<arg<<endl;
+cout<<"###"<<#arg##":"<<arg<<endl;
 
 using namespace std;
 using namespace chrono;
@@ -158,7 +159,7 @@ void testdownLoadHistoryData(HsQuantDataSDKInterface* sdk)
 	GET(startDate);
 	GET(endDate);
 	GET(frequency);
-	int ret = sdk->downLoadHistoryData(mkt.c_str(), frequency, startDate, endDate, nullptr, nullptr);
+	int ret = sdk->downLoadHistoryData(mkt.c_str(), frequency, startDate, endDate, myCB, nullptr);
 	OUTPUT(ret);
 }
 
