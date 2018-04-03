@@ -216,10 +216,10 @@ void testgetLocalStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	GET(nStartDate);
-	GET(nEndDate);
 	int size = sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
 	OUTPUT(size);
+	OUTPUT(nStartDate);
+	OUTPUT(nEndDate);
 }
 
 void testgetStorageStockInfo(HsQuantDataSDKInterface* sdk)
@@ -228,10 +228,27 @@ void testgetStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	GET(nStartDate);
-	GET(nEndDate);
 	int size = sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
 	OUTPUT(size);
+	OUTPUT(nStartDate);
+	OUTPUT(nEndDate);
+}
+
+void testgetLocalStorageStockInfoOneCode(HsQuantDataSDKInterface* sdk)
+{
+	string code, mkt;
+	int nFrequency;
+	GET(code);
+	GET(mkt);
+	GET(nFrequency);
+	CodeInfo _info;
+	memcpy(_info.code, code.c_str(), code.length());
+	memcpy(_info.market, mkt.c_str(), mkt.length());
+	_info.frequency = nFrequency;
+	int size = sdk->getLocalStorageStockInfo(&_info, 1);
+	OUTPUT(size);
+	OUTPUT(_info.startDate);
+	OUTPUT(_info.endDate);
 }
 
 int main()
@@ -261,6 +278,7 @@ int main()
 		cout << "9.getStorageStockInfo" << endl;
 		cout << "a.setStorageConfig" << endl;
 		cout << "b.getStorageConfig" << endl;
+		cout << "c.getLocalStorageStockInfoOneCode" << endl;
 		cout << "--------------------------------" << endl;
 		cin >> flag;
 		switch (flag)
@@ -298,6 +316,9 @@ int main()
 		case 'b':
 			testgetStorageConfig(sdk);
 			break;
+		case 'c':
+			testgetLocalStorageStockInfoOneCode(sdk);
+			break;
 		default:
 			break;
 		}
@@ -316,13 +337,13 @@ int main11()
 	opt->setSDKCallback(m_sdkCB);
 	HsQuantDataSDKInterface* sdk = CreateQuantSDK(opt);
 	
-// 	Session* m_session = sdk->getSdkSession();
-// 	IHsCommMessage* msg = m_session->CreateMessage(BIZ_H5PROTO, H5SDK_SERVER_INFO, REQUEST);
-// 	IHsCommMessage* rsp = NULL;
-// 	int ret = m_session->SyncCall(msg, &rsp, 1000);
-// 	//int ret = m_session->AsyncSend(msg);
-// 	msg->Release();
-// 	const char* svr_name = rsp->GetItem(H5SDK_TAG_SERVER_NAME)->GetString();
+	Session* m_session = sdk->getSdkSession();
+	IHsCommMessage* msg = m_session->CreateMessage(BIZ_H5PROTO, H5SDK_SERVER_INFO, REQUEST);
+	IHsCommMessage* rsp = NULL;
+	int ret = m_session->SyncCall(msg, &rsp, 1000);
+	//int ret = m_session->AsyncSend(msg);
+	msg->Release();
+	const char* svr_name = rsp->GetItem(H5SDK_TAG_SERVER_NAME)->GetString();
 	//sdk->downLoadHistoryData("XSHG", 6, 0, 99991231, NULL, NULL);
 	CodeInfo* _codeInfo;
 	int count = 0; 
@@ -335,11 +356,11 @@ int main11()
 	double klineDatas[256] = { 0 };
 	unsigned int dfIndex[8] = { 0 };
 	int r = sdk->getHistoryByDate("XSHG", "600570", 20180101, 20180106, 6, 2, 1, recordNum, klineDatas, dfIndex, 0, 0);
-// 	CodeInfo* tmp;
-// 	for (int i = 0; i < count; ++i)
-// 	{
-// 		tmp = &_codeInfo[i];
-// 	}
+	CodeInfo* tmp;
+	for (int i = 0; i < count; ++i)
+	{
+		tmp = &_codeInfo[i];
+	}
 	ShareGroup* share;
 	int ret = sdk->getIndexData("399001", "XSHE", 20180313, 20180315, &share, count);
 	sdk->releaseShareGroup(share);
