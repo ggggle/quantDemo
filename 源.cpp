@@ -26,6 +26,9 @@ void formatDatas(double* klineDatas, unsigned int* dfIndex, int num)
 	cout << klineDatas[13 * num + KLINE_HIGH] << endl;
 	cout << klineDatas[13 * num + KLINE_LOW] << endl;
 	cout << klineDatas[13 * num + KLINE_CLOSE] << endl;
+	cout << klineDatas[13 * num + KLINE_PRECLOSE] << endl;
+	cout << klineDatas[13 * num + KLINE_AMOUNT] << endl;
+	cout << klineDatas[13 * num + KLINE_BALANCE] << endl;
 	cout << endl;
 }
 
@@ -276,13 +279,14 @@ void testgetMarketCodeList(HsQuantDataSDKInterface* sdk)
 	int ret = sdk->getMarketCodeList(hqType.c_str(), beginDate, endDate, &codes, count);
 	OUTPUT(ret);
 	OUTPUT(count);
-	fstream file("codelist.txt", ios::out);
+	fstream file("codeList.txt", ios::out);
 	for (int i = 0; i < count; ++i)
 	{
 		file << codes[i].code << "." << codes[i].market << "," << codes[i].startDate << endl;
 	}
 	file.close();
 	sdk->releaseCodeInfo(codes);
+	cout << "结果已保存至codeList.txt" << endl;
 }
 
 void testgetIndexData(HsQuantDataSDKInterface* sdk)
@@ -304,6 +308,7 @@ void testgetIndexData(HsQuantDataSDKInterface* sdk)
 	}
 	file.close();
 	sdk->releaseShareGroup(_shareGrp);
+	cout << "结果已保存至indexData.txt" << endl;
 }
 
 void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
