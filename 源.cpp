@@ -63,13 +63,16 @@ void testgetHistoryByDate(HsQuantDataSDKInterface* sdk)
 	int ret = sdk->getHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, frequency, right, fillFlag, recordNum, klineDatas, dfIndex, nullptr, nullptr);
 	OUTPUT(ret);
 	OUTPUT(recordNum);
-	int showResult;
-	GET(showResult);
-	if (1 == showResult)
+	if (0 == ret)
 	{
-		for (int i = 0; i < recordNum; ++i)
+		int showResult;
+		GET(showResult);
+		if (1 == showResult)
 		{
-			formatDatas(klineDatas, dfIndex, i);
+			for (int i = 0; i < recordNum; ++i)
+			{
+				formatDatas(klineDatas, dfIndex, i);
+			}
 		}
 	}
 	delete[] klineDatas;
@@ -108,13 +111,16 @@ void testgetLocalHistoryByDate(HsQuantDataSDKInterface* sdk)
 	int ret = sdk->getLocalHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, frequency, right, klineDatas, dfIndex);
 	OUTPUT(ret);
 	OUTPUT(recordNum);
-	int showResult;
-	GET(showResult);
-	if (1 == showResult)
+	if (0 == ret)
 	{
-		for (int i = 0; i < recordNum; ++i)
+		int showResult;
+		GET(showResult);
+		if (1 == showResult)
 		{
-			formatDatas(klineDatas, dfIndex, i);
+			for (int i = 0; i < recordNum; ++i)
+			{
+				formatDatas(klineDatas, dfIndex, i);
+			}
 		}
 	}
 	delete[] klineDatas;
@@ -132,20 +138,26 @@ void testgetLocalHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	GET(iFrequency);
 	GET(iRight);
 	GET(fillFlag);
-	if (barCount <= 0)
+	if (barCount == 0)
 		return;
-	double* klineDatas = new double[13 * barCount];
-	unsigned int* dfIndex = new unsigned int[barCount];
+	int count = barCount;
+	if (count < 0)
+		count *= -1;
+	double* klineDatas = new double[13 * count];
+	unsigned int* dfIndex = new unsigned int[count];
 	int ret = sdk->getLocalHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency, iRight, fillFlag, recordNum, klineDatas, dfIndex);
 	OUTPUT(ret);
 	OUTPUT(recordNum);
-	int showResult;
-	GET(showResult);
-	if (1 == showResult)
+	if (0 == ret)
 	{
-		for (int i = 0; i < recordNum; ++i)
+		int showResult;
+		GET(showResult);
+		if (1 == showResult)
 		{
-			formatDatas(klineDatas, dfIndex, i);
+			for (int i = 0; i < recordNum; ++i)
+			{
+				formatDatas(klineDatas, dfIndex, i);
+			}
 		}
 	}
 	delete[] klineDatas;
@@ -305,21 +317,27 @@ void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	GET(iFrequency);
 	GET(iRight);
 	GET(fillFlag);
-	if (barCount <= 0)
+	if (0 == barCount)
 		return;
-	double* klineDatas = new double[13 * barCount];
-	unsigned int* dfIndex = new unsigned int[barCount];
+	int count = barCount;
+	if (count < 0)
+		count *= -1;
+	double* klineDatas = new double[13 * count];
+	unsigned int* dfIndex = new unsigned int[count];
 	int ret = sdk->getHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency, 
 		iRight, recordNum, klineDatas, dfIndex, nullptr, nullptr);
 	OUTPUT(ret);
 	OUTPUT(recordNum);
-	int showResult;
-	GET(showResult);
-	if (1 == showResult)
+	if (0 == ret)
 	{
-		for (int i = 0; i < recordNum; ++i)
+		int showResult;
+		GET(showResult);
+		if (1 == showResult)
 		{
-			formatDatas(klineDatas, dfIndex, i);
+			for (int i = 0; i < recordNum; ++i)
+			{
+				formatDatas(klineDatas, dfIndex, i);
+			}
 		}
 	}
 	delete[] klineDatas;
