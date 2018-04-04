@@ -1,6 +1,7 @@
 #include "export.h"
 #include <iostream>
 #include <chrono>
+#include <fstream>
 #include "cfg.h"
 #include "callBack.h"
 
@@ -216,7 +217,7 @@ void testgetLocalStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	int size = sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	long long size = sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
 	OUTPUT(size);
 	OUTPUT(nStartDate);
 	OUTPUT(nEndDate);
@@ -228,7 +229,7 @@ void testgetStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	int size = sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	long long size = sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
 	OUTPUT(size);
 	OUTPUT(nStartDate);
 	OUTPUT(nEndDate);
@@ -245,10 +246,84 @@ void testgetLocalStorageStockInfoOneCode(HsQuantDataSDKInterface* sdk)
 	memcpy(_info.code, code.c_str(), code.length());
 	memcpy(_info.market, mkt.c_str(), mkt.length());
 	_info.frequency = nFrequency;
-	int size = sdk->getLocalStorageStockInfo(&_info, 1);
+	long long size = sdk->getLocalStorageStockInfo(&_info, 1);
 	OUTPUT(size);
 	OUTPUT(_info.startDate);
 	OUTPUT(_info.endDate);
+}
+
+void testgetMarketCodeList(HsQuantDataSDKInterface* sdk)
+{
+	string hqType;
+	int beginDate, endDate;
+	GET(hqType);
+	GET(beginDate);
+	GET(endDate);
+	CodeInfo* codes = NULL;
+	int count;
+	int ret = sdk->getMarketCodeList(hqType.c_str(), beginDate, endDate, &codes, count);
+	OUTPUT(ret);
+	OUTPUT(count);
+	fstream file("codelist.txt", ios::out);
+	for (int i = 0; i < count; ++i)
+	{
+		file << codes[i].code << "." << codes[i].market << "," << codes[i].startDate << endl;
+	}
+	file.close();
+	sdk->releaseCodeInfo(codes);
+}
+
+void testgetIndexData(HsQuantDataSDKInterface* sdk)
+{
+	string indexCode, market;
+	int beginDate, endDate, shareCount;
+	GET(indexCode);
+	GET(market);
+	GET(beginDate);
+	GET(endDate);
+	ShareGroup* _shareGrp;
+	int ret = sdk->getIndexData(indexCode.c_str(), market.c_str(), beginDate, endDate, &_shareGrp, shareCount);
+	OUTPUT(ret);
+	OUTPUT(shareCount);
+	fstream file("indexData.txt", ios::out);
+	for (int i = 0; i < shareCount; ++i)
+	{
+		file << _shareGrp[i].code << "." << _shareGrp[i].market << "," << _shareGrp[i].date << endl;
+	}
+	file.close();
+	sdk->releaseShareGroup(_shareGrp);
+}
+
+void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
+{
+	string mkt, code;
+	int queryDate, barCount, iFrequency, iRight, fillFlag, recordNum;
+	GET(mkt);
+	GET(code);
+	GET(queryDate);
+	GET(barCount);
+	GET(iFrequency);
+	GET(iRight);
+	GET(fillFlag);
+	if (barCount <= 0)
+		return;
+	double* klineDatas = new double[13 * barCount];
+	unsigned int* dfIndex = new unsigned int[barCount];
+	int ret = sdk->getHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency, 
+		iRight, recordNum, klineDatas, dfIndex, nullptr, nullptr);
+	OUTPUT(ret);
+	OUTPUT(recordNum);
+	int showResult;
+	GET(showResult);
+	if (1 == showResult)
+	{
+		for (int i = 0; i < recordNum; ++i)
+		{
+			formatDatas(klineDatas, dfIndex, i);
+		}
+	}
+	delete[] klineDatas;
+	delete[] dfIndex;
 }
 
 int main()
@@ -267,6 +342,7 @@ int main()
 	while (true)
 	{
 		cout << "--------------------------------" << endl;
+		cout << "0.getHistoryByOffset" << endl;
 		cout << "1.getHistoryByDateSize" << endl;
 		cout << "2.getHistoryByDate" << endl;
 		cout << "3.getLocalHistoryByDate" << endl;
@@ -278,11 +354,16 @@ int main()
 		cout << "9.getStorageStockInfo" << endl;
 		cout << "a.setStorageConfig" << endl;
 		cout << "b.getStorageConfig" << endl;
-		cout << "c.getLocalStorageStockInfoOneCode" << endl;
+		cout << "c.getMarketCodeList" << endl;
+		cout << "d.getIndexData" << endl;
+		cout << "p.getLocalStorageStockInfoOneCode" << endl;
 		cout << "--------------------------------" << endl;
 		cin >> flag;
 		switch (flag)
 		{
+		case '0':
+			testgetHistoryByOffset(sdk);
+			break;
 		case '1':
 			testgetHistoryByDateSize(sdk);
 			break;
@@ -317,6 +398,12 @@ int main()
 			testgetStorageConfig(sdk);
 			break;
 		case 'c':
+			testgetMarketCodeList(sdk);
+			break;
+		case 'd':
+			testgetIndexData(sdk);
+			break;
+		case 'p':
 			testgetLocalStorageStockInfoOneCode(sdk);
 			break;
 		default:
