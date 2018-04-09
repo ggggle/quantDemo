@@ -1,12 +1,23 @@
 #include "export.h"
 #include <iostream>
-#include <chrono>
+//#include <chrono>
 #include <fstream>
 #include "cfg.h"
 #include "callBack.h"
+#ifdef _WIN32
+#include "minidump.h"
+class DumpClass {
+public:
+	DumpClass() {
+		InitMinDump();
+	}
+};
+DumpClass g_dump;
+#endif // WIN32
 
-
+#if _MSC_VER >= 1900
 #pragma comment(lib, "legacy_stdio_definitions.lib")
+#endif
 
 #define GET(arg) \
 cout<<#arg##":";\
@@ -16,7 +27,7 @@ cin>>arg;
 cout<<"###"<<#arg##":"<<arg<<endl;
 
 using namespace std;
-using namespace chrono;
+//using namespace chrono;
 
 void formatDatas(double* klineDatas, unsigned int* dfIndex, int num)
 {
@@ -436,25 +447,17 @@ int main()
 	return 0;
 }
 
-/*
 int main11()
 {
-	SdkCB* m_sdkCB = new SdkCB("any", "any");
+// 	int a = 0;
+// 	int b = 3;
+// 	int c = b / a;
 	SDKOption* opt = CreateSDKOption();
-	opt->setHQConnectInfo("192.168.46.217", 9601);
+	opt->setHQConnectInfo("192.168.46.217", 9602);
 	opt->setHQhttpDomain("http://10.20.135.140:8081");
 	opt->setInfoNetDomain("http://10.20.135.125:8080");
-	opt->setSDKCallback(m_sdkCB);
 	HsQuantDataSDKInterface* sdk = CreateQuantSDK(opt);
-	
-	Session* m_session = sdk->getSdkSession();
-	IHsCommMessage* msg = m_session->CreateMessage(BIZ_H5PROTO, H5SDK_SERVER_INFO, REQUEST);
-	IHsCommMessage* rsp = NULL;
-	int ret = m_session->SyncCall(msg, &rsp, 1000);
-	//int ret = m_session->AsyncSend(msg);
-	msg->Release();
-	const char* svr_name = rsp->GetItem(H5SDK_TAG_SERVER_NAME)->GetString();
-	//sdk->downLoadHistoryData("XSHG", 6, 0, 99991231, NULL, NULL);
+/*
 	CodeInfo* _codeInfo;
 	int count = 0; 
 	auto start = chrono::system_clock::now();
@@ -462,10 +465,6 @@ int main11()
 	auto end = chrono::system_clock::now();
 	auto duration = duration_cast<microseconds>(end - start);
 	cout << double(duration.count()) / microseconds::period::den << endl;
-	int recordNum = 0;
-	double klineDatas[256] = { 0 };
-	unsigned int dfIndex[8] = { 0 };
-	int r = sdk->getHistoryByDate("XSHG", "600570", 20180101, 20180106, 6, 2, 1, recordNum, klineDatas, dfIndex, 0, 0);
 	CodeInfo* tmp;
 	for (int i = 0; i < count; ++i)
 	{
@@ -473,6 +472,10 @@ int main11()
 	}
 	ShareGroup* share;
 	int ret = sdk->getIndexData("399001", "XSHE", 20180313, 20180315, &share, count);
-	sdk->releaseShareGroup(share);
+	sdk->releaseShareGroup(share);*/
+	//Sleep(5000);
+	int startDate, endDate;
+	long long r = sdk->getStorageStockInfo("XSHG", 6, startDate, endDate);
+	r = sdk->getLocalStorageStockInfo("XSHG", 7, startDate, endDate);
 	return 0;
-}*/
+}
