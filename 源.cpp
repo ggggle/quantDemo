@@ -1,6 +1,6 @@
 #include "export.h"
 #include <iostream>
-//#include <chrono>
+#include <chrono>
 #include <fstream>
 #include "cfg.h"
 #include "callBack.h"
@@ -26,8 +26,16 @@ cin>>arg;
 #define OUTPUT(arg) \
 cout<<"###"<<#arg##":"<<arg<<endl;
 
+#define COUNT_TIME(RET, FUNC) \
+do { \
+auto start = chrono::system_clock::now(); \
+RET = FUNC; \
+auto duration = chrono::duration_cast<microseconds>(chrono::system_clock::now() - start); \
+cout <<"**cost[" << double(duration.count()) / microseconds::period::den << "s]" << endl; \
+} while (0);
+
 using namespace std;
-//using namespace chrono;
+using namespace chrono;
 
 void formatDatas(double* klineDatas, unsigned int* dfIndex, int num)
 {
@@ -53,7 +61,9 @@ void testgetHistoryByDateSize(HsQuantDataSDKInterface* sdk)
 	GET(endDate);
 	GET(frequency);
 	GET(fillFlag);
-	int ret = sdk->getHistoryByDateSize(mkt.c_str(), code.c_str(), startDate, endDate, frequency, fillFlag, recordNum);
+	int ret;
+	COUNT_TIME(ret, sdk->getHistoryByDateSize(mkt.c_str(), code.c_str(), startDate, endDate, 
+		frequency, fillFlag, recordNum));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 }
@@ -74,7 +84,9 @@ void testgetHistoryByDate(HsQuantDataSDKInterface* sdk)
 		return;
 	double* klineDatas = new double[13 * tmp];
 	unsigned int* dfIndex = new unsigned int[tmp];
-	int ret = sdk->getHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, frequency, right, fillFlag, recordNum, klineDatas, dfIndex, nullptr, nullptr);
+	int ret;
+	COUNT_TIME(ret, sdk->getHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, frequency, 
+		right, fillFlag, recordNum, klineDatas, dfIndex, nullptr, nullptr));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 	if (0 == ret)
@@ -102,7 +114,9 @@ void testgetLocalHistoryByDateSize(HsQuantDataSDKInterface* sdk)
 	GET(startDate);
 	GET(endDate);
 	GET(frequency);
-	int ret = sdk->getLocalHistoryByDateSize(mkt.c_str(), code.c_str(), startDate, endDate, frequency, recordNum);
+	int ret;
+	COUNT_TIME(ret, 
+		sdk->getLocalHistoryByDateSize(mkt.c_str(), code.c_str(), startDate, endDate, frequency, recordNum));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 }
@@ -122,7 +136,9 @@ void testgetLocalHistoryByDate(HsQuantDataSDKInterface* sdk)
 		return;
 	double* klineDatas = new double[13 * recordNum];
 	unsigned int* dfIndex = new unsigned int[recordNum];
-	int ret = sdk->getLocalHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, frequency, right, klineDatas, dfIndex);
+	int ret;
+	COUNT_TIME(ret, sdk->getLocalHistoryByDate(mkt.c_str(), code.c_str(), startDate, endDate, 
+		frequency, right, klineDatas, dfIndex));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 	if (0 == ret)
@@ -159,7 +175,9 @@ void testgetLocalHistoryByOffset(HsQuantDataSDKInterface* sdk)
 		count *= -1;
 	double* klineDatas = new double[13 * count];
 	unsigned int* dfIndex = new unsigned int[count];
-	int ret = sdk->getLocalHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency, iRight, fillFlag, recordNum, klineDatas, dfIndex);
+	int ret;
+	COUNT_TIME(ret, sdk->getLocalHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, 
+		barCount, iFrequency, iRight, fillFlag, recordNum, klineDatas, dfIndex));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 	if (0 == ret)
@@ -186,7 +204,8 @@ void testdownLoadHistoryData(HsQuantDataSDKInterface* sdk)
 	GET(startDate);
 	GET(endDate);
 	GET(frequency);
-	int ret = sdk->downLoadHistoryData(mkt.c_str(), frequency, startDate, endDate, myCB, nullptr);
+	int ret;
+	COUNT_TIME(ret, sdk->downLoadHistoryData(mkt.c_str(), frequency, startDate, endDate, myCB, nullptr));
 	OUTPUT(ret);
 }
 
@@ -212,7 +231,8 @@ void testdeleteLocalStockData(HsQuantDataSDKInterface* sdk)
 		_codeInfo[i].startDate = date;
 		_codeInfo[i].direction = direction;
 	}
-	int ret = sdk->deleteLocalStockData(_codeInfo, codeCount);
+	int ret;
+	COUNT_TIME(ret, sdk->deleteLocalStockData(_codeInfo, codeCount));
 	OUTPUT(ret);
 	delete[] _codeInfo;
 }
@@ -243,7 +263,8 @@ void testgetLocalStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	long long size = sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	long long size;
+	COUNT_TIME(size, sdk->getLocalStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate));
 	OUTPUT(size);
 	OUTPUT(nStartDate);
 	OUTPUT(nEndDate);
@@ -255,7 +276,8 @@ void testgetStorageStockInfo(HsQuantDataSDKInterface* sdk)
 	int nFrequency, nStartDate, nEndDate;
 	GET(pMarket);
 	GET(nFrequency);
-	long long size = sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate);
+	long long size;
+	COUNT_TIME(size, sdk->getStorageStockInfo(pMarket.c_str(), nFrequency, nStartDate, nEndDate));
 	OUTPUT(size);
 	OUTPUT(nStartDate);
 	OUTPUT(nEndDate);
@@ -272,7 +294,8 @@ void testgetLocalStorageStockInfoOneCode(HsQuantDataSDKInterface* sdk)
 	memcpy(_info.code, code.c_str(), code.length());
 	memcpy(_info.market, mkt.c_str(), mkt.length());
 	_info.frequency = nFrequency;
-	long long size = sdk->getLocalStorageStockInfo(&_info, 1);
+	long long size;
+	COUNT_TIME(size, sdk->getLocalStorageStockInfo(&_info, 1));
 	OUTPUT(size);
 	OUTPUT(_info.startDate);
 	OUTPUT(_info.endDate);
@@ -287,7 +310,9 @@ void testgetMarketCodeList(HsQuantDataSDKInterface* sdk)
 	GET(endDate);
 	CodeInfo* codes = NULL;
 	int count;
-	int ret = sdk->getMarketCodeList(hqType.c_str(), beginDate, endDate, &codes, count);
+	int ret;
+	COUNT_TIME(ret,
+		sdk->getMarketCodeList(hqType.c_str(), beginDate, endDate, &codes, count));
 	OUTPUT(ret);
 	OUTPUT(count);
 	fstream file("codeList.txt", ios::out);
@@ -309,7 +334,9 @@ void testgetIndexData(HsQuantDataSDKInterface* sdk)
 	GET(beginDate);
 	GET(endDate);
 	ShareGroup* _shareGrp;
-	int ret = sdk->getIndexData(indexCode.c_str(), market.c_str(), beginDate, endDate, &_shareGrp, shareCount);
+	int ret;
+	COUNT_TIME(ret,
+		sdk->getIndexData(indexCode.c_str(), market.c_str(), beginDate, endDate, &_shareGrp, shareCount));
 	OUTPUT(ret);
 	OUTPUT(shareCount);
 	fstream file("indexData.txt", ios::out);
@@ -340,8 +367,9 @@ void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
 		count *= -1;
 	double* klineDatas = new double[13 * count];
 	unsigned int* dfIndex = new unsigned int[count];
-	int ret = sdk->getHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency, 
-		iRight, recordNum, klineDatas, dfIndex, nullptr, nullptr);
+	int ret;
+	COUNT_TIME(ret, sdk->getHistoryByOffset(mkt.c_str(), code.c_str(), queryDate, barCount, iFrequency,
+		iRight, recordNum, klineDatas, dfIndex, nullptr, nullptr));
 	OUTPUT(ret);
 	OUTPUT(recordNum);
 	if (0 == ret)
