@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <sstream>
 #include "cfg.h"
 #include "callBack.h"
 #ifdef _WIN32
@@ -37,18 +38,37 @@ cout <<"**cost[" << double(duration.count()) / microseconds::period::den << "s]"
 using namespace std;
 using namespace chrono;
 
-void formatDatas(double* klineDatas, unsigned int* dfIndex, int num)
+static fstream tmpFile("temp", ios::out);
+
+void formatDatas(double* klineDatas, unsigned int* dfIndex, int num, int showFlag)
 {
-	cout << dfIndex[num] << endl;
-	cout << "---------" << endl;
-	cout << klineDatas[13 * num + KLINE_OPEN] << endl;
-	cout << klineDatas[13 * num + KLINE_HIGH] << endl;
-	cout << klineDatas[13 * num + KLINE_LOW] << endl;
-	cout << klineDatas[13 * num + KLINE_CLOSE] << endl;
-	cout << klineDatas[13 * num + KLINE_PRECLOSE] << endl;
-	cout << klineDatas[13 * num + KLINE_AMOUNT] << endl;
-	cout << klineDatas[13 * num + KLINE_BALANCE] << endl;
-	cout << endl;
+	ostringstream oss;
+	if (0 == num)
+	{
+		oss << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	}
+	oss << dfIndex[num] << endl;
+	oss << "---------" << endl;
+	oss << klineDatas[13 * num + KLINE_OPEN] << endl;
+	oss << klineDatas[13 * num + KLINE_HIGH] << endl;
+	oss << klineDatas[13 * num + KLINE_LOW] << endl;
+	oss << klineDatas[13 * num + KLINE_CLOSE] << endl;
+	oss << klineDatas[13 * num + KLINE_PRECLOSE] << endl;
+	oss << klineDatas[13 * num + KLINE_AMOUNT] << endl;
+	oss << klineDatas[13 * num + KLINE_BALANCE] << endl;
+	oss << endl;
+	switch (showFlag)
+	{
+	case 1:
+		cout << oss.str();
+		break;
+	case 2:
+		tmpFile << oss.str();
+		tmpFile.flush();
+		break;
+	default:
+		break;
+	}
 }
 
 void testgetHistoryByDateSize(HsQuantDataSDKInterface* sdk)
@@ -91,13 +111,13 @@ void testgetHistoryByDate(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult;
-		GET(showResult);
-		if (1 == showResult)
+		int showResult_1Screen2File;
+		GET(showResult_1Screen2File);
+		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
 		{
 			for (int i = 0; i < recordNum; ++i)
 			{
-				formatDatas(klineDatas, dfIndex, i);
+				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
 			}
 		}
 	}
@@ -143,13 +163,13 @@ void testgetLocalHistoryByDate(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult;
-		GET(showResult);
-		if (1 == showResult)
+		int showResult_1Screen2File;
+		GET(showResult_1Screen2File);
+		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
 		{
 			for (int i = 0; i < recordNum; ++i)
 			{
-				formatDatas(klineDatas, dfIndex, i);
+				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
 			}
 		}
 	}
@@ -182,13 +202,13 @@ void testgetLocalHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult;
-		GET(showResult);
-		if (1 == showResult)
+		int showResult_1Screen2File;
+		GET(showResult_1Screen2File);
+		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
 		{
 			for (int i = 0; i < recordNum; ++i)
 			{
-				formatDatas(klineDatas, dfIndex, i);
+				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
 			}
 		}
 	}
@@ -352,14 +372,13 @@ void testgetIndexData(HsQuantDataSDKInterface* sdk)
 void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
 {
 	string mkt, code;
-	int queryDate, barCount, iFrequency, iRight, fillFlag, recordNum;
+	int queryDate, barCount, iFrequency, iRight, recordNum;
 	GET(mkt);
 	GET(code);
 	GET(queryDate);
 	GET(barCount);
 	GET(iFrequency);
 	GET(iRight);
-	GET(fillFlag);
 	if (0 == barCount)
 		return;
 	int count = barCount;
@@ -374,13 +393,13 @@ void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult;
-		GET(showResult);
-		if (1 == showResult)
+		int showResult_1Screen2File;
+		GET(showResult_1Screen2File);
+		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
 		{
 			for (int i = 0; i < recordNum; ++i)
 			{
-				formatDatas(klineDatas, dfIndex, i);
+				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
 			}
 		}
 	}

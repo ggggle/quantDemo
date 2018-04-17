@@ -2,4 +2,4 @@
 
 #include "QuantDataPyAdapter.h"
 
-void myCB(CodeDownLoadStat& downloadStat, void *pContext);
+int myCB(CodeDownLoadStat& downloadStat, void *pContext);

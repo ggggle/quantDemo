@@ -1,10 +1,10 @@
 #include "callBack.h"
-#include <iostream>
+#include <stdio.h>
 
-using namespace std;
-
-void myCB(CodeDownLoadStat& downloadStat, void *pContext)
+int myCB(CodeDownLoadStat& downloadStat, void *pContext)
 {
-	cout << downloadStat.uFinCount << endl;
-	cout << downloadStat.uTotalCount << endl;
+	printf("\r%u/%u", downloadStat.uFinCount, downloadStat.uTotalCount);
+	if (downloadStat.uFinCount == downloadStat.uTotalCount)
+		printf("\n");
+	return 0;
 }

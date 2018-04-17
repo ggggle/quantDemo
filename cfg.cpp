@@ -18,7 +18,7 @@ Cfg::Cfg()
 		long fileSize = ftell(cfgFile);
 		fseek(cfgFile, 0, SEEK_SET);
 		char buf[10240] = { 0 };
-		fread(buf, fileSize, 1, cfgFile);
+		fread(buf, fileSize > sizeof buf ? sizeof buf : fileSize, 1, cfgFile);
 		rapidjson::Document doc;
 		doc.Parse<rapidjson::kParseDefaultFlags>(buf);
 		if (!doc.HasParseError())
@@ -28,6 +28,10 @@ Cfg::Cfg()
 			GET_STRING_VALUE(doc, info_net);
 			GET_INT_VALUE(doc, hq_port);
 			ok = true;
+		}
+		else
+		{
+			printf("≈‰÷√Œƒº˛¥ÌŒÛ\n");
 		}
 		fclose(cfgFile);
 	}
