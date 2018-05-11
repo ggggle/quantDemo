@@ -21,8 +21,14 @@ DumpClass g_dump;
 #endif
 
 #define GET(arg) \
+do { \
 cout<<#arg##":";\
-cin>>arg;
+cin.clear(); \
+cin.ignore(1024, '\n'); \
+cin>>arg;\
+if (cin.fail()) cout<<"error input type"<<endl; \
+else break; \
+} while (true);
 
 #define OUTPUT(arg) \
 cout<<"###"<<#arg##":"<<arg<<endl;
@@ -31,14 +37,14 @@ cout<<"###"<<#arg##":"<<arg<<endl;
 do { \
 auto start = chrono::system_clock::now(); \
 RET = FUNC; \
-auto duration = chrono::duration_cast<microseconds>(chrono::system_clock::now() - start); \
-cout <<"**cost[" << double(duration.count()) / microseconds::period::den << "s]" << endl; \
+auto duration = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now() - start); \
+cout <<"**cost[" << double(duration.count()) / chrono::microseconds::period::den << "s]" << endl; \
 } while (0);
 
 using namespace std;
 using namespace chrono;
 
-static fstream tmpFile("temp", ios::out);
+static fstream tmpFile;
 
 void formatDatas(double* klineDatas, unsigned int* dfIndex, int num, int showFlag)
 {
@@ -56,6 +62,8 @@ void formatDatas(double* klineDatas, unsigned int* dfIndex, int num, int showFla
 	oss << klineDatas[13 * num + KLINE_PRECLOSE] << endl;
 	oss << klineDatas[13 * num + KLINE_AMOUNT] << endl;
 	oss << klineDatas[13 * num + KLINE_BALANCE] << endl;
+	oss << klineDatas[13 * num + KLINE_TURN_OVER] << endl;
+	oss << klineDatas[13 * num + KLINE_ISOPEN_FLAG] << endl;
 	oss << endl;
 	switch (showFlag)
 	{
@@ -64,10 +72,33 @@ void formatDatas(double* klineDatas, unsigned int* dfIndex, int num, int showFla
 		break;
 	case 2:
 		tmpFile << oss.str();
-		tmpFile.flush();
 		break;
 	default:
 		break;
+	}
+}
+
+void output_result(double* klineDatas, unsigned int* dfIndex, int recordNum)
+{
+	int showResult_1Screen2File;
+	GET(showResult_1Screen2File);
+	switch (showResult_1Screen2File)
+	{
+	case 2:  //file
+		tmpFile.open("temp", ios::out);
+	case 1:  //screen
+		for (int i = 0; i < recordNum; ++i)
+		{
+			formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
+		}
+		break;
+	default:
+		break;
+	}
+	if (2 == showResult_1Screen2File)
+	{
+		tmpFile.flush();
+		tmpFile.close();
 	}
 }
 
@@ -101,7 +132,10 @@ void testgetHistoryByDate(HsQuantDataSDKInterface* sdk)
 	GET(right);
 	sdk->getHistoryByDateSize(mkt.c_str(), code.c_str(), startDate, endDate, frequency, fillFlag, tmp);
 	if (tmp <= 0)
+	{
+		cout << "查询数据为空" << endl;
 		return;
+	}
 	double* klineDatas = new double[13 * tmp];
 	unsigned int* dfIndex = new unsigned int[tmp];
 	int ret;
@@ -111,15 +145,7 @@ void testgetHistoryByDate(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult_1Screen2File;
-		GET(showResult_1Screen2File);
-		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
-		{
-			for (int i = 0; i < recordNum; ++i)
-			{
-				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
-			}
-		}
+		output_result(klineDatas, dfIndex, recordNum);
 	}
 	delete[] klineDatas;
 	delete[] dfIndex;
@@ -163,15 +189,7 @@ void testgetLocalHistoryByDate(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult_1Screen2File;
-		GET(showResult_1Screen2File);
-		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
-		{
-			for (int i = 0; i < recordNum; ++i)
-			{
-				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
-			}
-		}
+		output_result(klineDatas, dfIndex, recordNum);
 	}
 	delete[] klineDatas;
 	delete[] dfIndex;
@@ -202,15 +220,7 @@ void testgetLocalHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult_1Screen2File;
-		GET(showResult_1Screen2File);
-		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
-		{
-			for (int i = 0; i < recordNum; ++i)
-			{
-				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
-			}
-		}
+		output_result(klineDatas, dfIndex, recordNum);
 	}
 	delete[] klineDatas;
 	delete[] dfIndex;
@@ -229,7 +239,33 @@ void testdownLoadHistoryData(HsQuantDataSDKInterface* sdk)
 	OUTPUT(ret);
 }
 
-void testdeleteLocalStockData(HsQuantDataSDKInterface* sdk)
+void testdeleteLocalStockDataByType(HsQuantDataSDKInterface* sdk)
+{
+	int codeCount;
+	GET(codeCount);
+	if (codeCount <= 0)
+		return;
+	CodeInfo* _codeInfo = new CodeInfo[codeCount];
+	string type;
+	int frequency, date, direction;
+	for (int i = 0; i < codeCount; ++i)
+	{
+		GET(type);
+		GET(frequency);
+		GET(date);
+		GET(direction);
+		memcpy(_codeInfo[i].market, type.c_str(), type.length());
+		_codeInfo[i].frequency = frequency;
+		_codeInfo[i].startDate = date;
+		_codeInfo[i].direction = direction;
+	}
+	int ret;
+	COUNT_TIME(ret, sdk->deleteLocalStockData(_codeInfo, codeCount));
+	OUTPUT(ret);
+	delete[] _codeInfo;
+}
+
+void testdeleteLocalStockDataByMktCode(HsQuantDataSDKInterface* sdk)
 {
 	int codeCount;
 	GET(codeCount);
@@ -393,15 +429,7 @@ void testgetHistoryByOffset(HsQuantDataSDKInterface* sdk)
 	OUTPUT(recordNum);
 	if (0 == ret)
 	{
-		int showResult_1Screen2File;
-		GET(showResult_1Screen2File);
-		if (1 == showResult_1Screen2File || 2 == showResult_1Screen2File)
-		{
-			for (int i = 0; i < recordNum; ++i)
-			{
-				formatDatas(klineDatas, dfIndex, i, showResult_1Screen2File);
-			}
-		}
+		output_result(klineDatas, dfIndex, recordNum);
 	}
 	delete[] klineDatas;
 	delete[] dfIndex;
@@ -418,6 +446,8 @@ int main()
 	opt->setHQConnectInfo(_cfg.hq_ip.c_str(), _cfg.hq_port);
 	opt->setHQhttpDomain(_cfg.hq_http.c_str());
 	opt->setInfoNetDomain(_cfg.info_net.c_str());
+	opt->setHQAuthInfo(_cfg.app_key.c_str(), _cfg.app_secret.c_str(), 
+		_cfg.user_name.c_str(), _cfg.user_pswd.c_str());
 	HsQuantDataSDKInterface* sdk = CreateQuantSDK(opt);
 	unsigned char flag(0);
 	while (true)
@@ -430,13 +460,14 @@ int main()
 		cout << "4.getLocalHistoryByDateSize" << endl;
 		cout << "5.getLocalHistoryByOffset" << endl;
 		cout << "6.downLoadHistoryData" << endl;
-		cout << "7.deleteLocalStockData" << endl;
+		cout << "7.deleteLocalStockDataByMktCode" << endl;
 		cout << "8.getLocalStorageStockInfo" << endl;
 		cout << "9.getStorageStockInfo" << endl;
 		cout << "a.setStorageConfig" << endl;
 		cout << "b.getStorageConfig" << endl;
 		cout << "c.getMarketCodeList" << endl;
 		cout << "d.getIndexData" << endl;
+		cout << "e.deleteLocalStockDataByType" << endl;
 		cout << "p.getLocalStorageStockInfoOneCode" << endl;
 		cout << "--------------------------------" << endl;
 		cin >> flag;
@@ -464,7 +495,7 @@ int main()
 			testdownLoadHistoryData(sdk);
 			break;
 		case '7':
-			testdeleteLocalStockData(sdk);
+			testdeleteLocalStockDataByMktCode(sdk);
 			break;
 		case '8':
 			testgetLocalStorageStockInfo(sdk);
@@ -484,6 +515,9 @@ int main()
 		case 'd':
 			testgetIndexData(sdk);
 			break;
+		case 'e':
+			testdeleteLocalStockDataByType(sdk);
+			break;
 		case 'p':
 			testgetLocalStorageStockInfoOneCode(sdk);
 			break;
@@ -496,6 +530,15 @@ int main()
 
 int main11()
 {
+	int a = 0;
+	bool ok = false;
+	do 
+	{
+		cin.clear();
+		cin.ignore(1024, '\n');
+		cin >> a;
+	} while (cin.fail());
+	return 0;
 // 	int a = 0;
 // 	int b = 3;
 // 	int c = b / a;

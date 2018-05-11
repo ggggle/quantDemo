@@ -26,6 +26,10 @@ Cfg::Cfg()
 			GET_STRING_VALUE(doc, hq_ip);
 			GET_STRING_VALUE(doc, hq_http);
 			GET_STRING_VALUE(doc, info_net);
+			GET_STRING_VALUE(doc, app_key);
+			GET_STRING_VALUE(doc, app_secret);
+			GET_STRING_VALUE(doc, user_name);
+			GET_STRING_VALUE(doc, user_pswd);
 			GET_INT_VALUE(doc, hq_port);
 			ok = true;
 		}
