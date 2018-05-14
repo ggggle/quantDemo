@@ -60,6 +60,8 @@ void formatDatas(double* klineDatas, unsigned int* dfIndex, int num, int showFla
 	oss << klineDatas[13 * num + KLINE_LOW] << endl;
 	oss << klineDatas[13 * num + KLINE_CLOSE] << endl;
 	oss << klineDatas[13 * num + KLINE_PRECLOSE] << endl;
+	oss << std::fixed;
+	oss.precision(0);
 	oss << klineDatas[13 * num + KLINE_AMOUNT] << endl;
 	oss << klineDatas[13 * num + KLINE_BALANCE] << endl;
 	oss << klineDatas[13 * num + KLINE_TURN_OVER] << endl;
