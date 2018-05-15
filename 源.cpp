@@ -256,7 +256,7 @@ void testdeleteLocalStockDataByType(HsQuantDataSDKInterface* sdk)
 		GET(frequency);
 		GET(date);
 		GET(direction);
-		memcpy(_codeInfo[i].market, type.c_str(), type.length());
+		memcpy(_codeInfo[i].hqType, type.c_str(), type.length());
 		_codeInfo[i].frequency = frequency;
 		_codeInfo[i].startDate = date;
 		_codeInfo[i].direction = direction;
